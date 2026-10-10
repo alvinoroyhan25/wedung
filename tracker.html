@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life Tracker v2.0</title>
+  <style>
+    /* ===== CSS VARIABLES (DARK/LIGHT MODE) ===== */
+    :root {
+      --transition: 0.3s ease;
+    }
+
+    [data-theme="dark"] {
+      --bg-main: #0f0f1a;
+      --bg-card: #1a1a2e;
+      --bg-input: #0f0f1a;
+      --bg-hover: #1e1e36;
+      --border: #2a2a4a;
+      --border-hover: #3a3a5a;
+      --text-primary: #e0e0e0;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --text-placeholder: #4a5568;
+      --accent-purple: #a78bfa;
+      --accent-blue: #60a5fa;
+      --accent-green: #22c55e;
+      --accent-yellow: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-orange: #ff6b35;
+      --gradient-1: linear-gradient(135deg, #1a1a2e, #16213e);
+      --gradient-bar: linear-gradient(90deg, #a78bfa, #60a5fa);
+      --gradient-chart: linear-gradient(180deg, #a78bfa, #60a5fa);
+      --shadow: 0 2px 10px rgba(0,0,0,0.3);
+      --habits-done-bg: #0a1a0f;
+      --badge-high-bg: #2a0a0a;
+      --badge-med-bg: #2a1a0a;
+      --badge-low-bg: #0a2a0f;
+      --calendar-today: #2a1a4a;
+      --calendar-active: #1a2a1a;
+      --pomodoro-work: #ef4444;
+      --pomodoro-break: #22c55e;
+    }
+
+    [data-theme="light"] {
+      --bg-main: #f0f2f5;
+      --bg-card: #ffffff;
+      --bg-input: #f8f9fa;
+      --bg-hover: #f0f0f0;
+      --border: #e0e0e0;
+      --border-hover: #c0c0c0;
+      --text-primary: #1a1a2e;
+      --text-secondary: #555;
+      --text-muted: #888;
+      --text-placeholder: #aaa;
+      --accent-purple: #7c3aed;
+      --accent-blue: #2563eb;
+      --accent-green: #16a34a;
+      --accent-yellow: #d97706;
+      --accent-red: #dc2626;
+      --accent-orange: #ea580c;
+      --gradient-1: linear-gradient(135deg, #7c3aed, #2563eb);
+      --gradient-bar: linear-gradient(90deg, #7c3aed, #2563eb);
+      --gradient-chart: linear-gradient(180deg, #7c3aed, #2563eb);
+      --shadow: 0 2px 10px rgba(0,0,0,0.08);
+      --habits-done-bg: #f0fdf4;
+      --badge-high-bg: #fef2f2;
+      --badge-med-bg: #fffbeb;
+      --badge-low-bg: #f0fdf4;
+      --calendar-today: #ede9fe;
+      --calendar-active: #dcfce7;
+      --pomodoro-work: #dc2626;
+      --pomodoro-break: #16a34a;
+    }
+
+    /* ===== RESET ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      min-height: 100vh;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      background: var(--gradient-1);
+      padding: 15px 25px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .header h1 {
+      font-size: 1.4rem;
+      color: white;
+    }
+
+    .header h1 span {
+      color: #fbbf24;
+    }
+
+    .tanggal-hari-ini {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.85rem;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 25px;
+      padding: 6px 14px;
+      color: white;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    /* Reminder Bell */
+    .reminder-bell {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      color: white;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .reminder-bell:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    .bell-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: var(--accent-red);
+      color: white;
+      font-size: 0.65rem;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    /* ===== NAV TABS ===== */
+    .nav-tabs {
+      display: flex;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      transition: background var(--transition);
+    }
+
+    .nav-tab {
+      padding: 13px 20px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .nav-tab:hover {
+      color: var(--accent-purple);
+      background: var(--bg-hover);
+    }
+
+    .nav-tab.aktif {
+      color: var(--accent-purple);
+      border-bottom-color: var(--accent-purple);
+      background: var(--bg-hover);
+    }
+
+    /* ===== CONTAINER ===== */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 15px;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.aktif { display: block; }
+
+    /* ===== CARDS ===== */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
+      transition: background var(--transition), border var(--transition);
+    }
+
+    .card h2 {
+      color: var(--accent-purple);
+      margin-bottom: 18px;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ===== INPUTS & BUTTONS ===== */
+    .input-field {
+      flex: 1;
+      padding: 11px 15px;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 0.93rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent-purple);
+    }
+
+    .input-field::placeholder {
+      color: var(--text-placeholder);
+    }
+
+    .btn {
+      padding: 11px 18px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.93rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent-purple);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
+    .btn-green {
+      background: var(--accent-green);
+      color: white;
+    }
+
+    .btn-red {
+      background: var(--accent-red);
+      color: white;
+    }
+
+    .btn-yellow {
+      background: var(--accent-yellow);
+      color: #1a1a2e;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+    }
+
+    .btn-sm {
+      padding: 7px 12px;
+      font-size: 0.82rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    /* ===== CHECKBOX ===== */
+    .check-box {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .check-box:hover { border-color: var(--accent-purple); }
+
+    .check-box.checked {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+    }
+
+    .check-box.checked::after {
+      content: "✓";
+      color: white;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--accent-red);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+
+    .delete-btn:hover { opacity: 1; background: var(--badge-high-bg); }
+
+    /* ===== PROGRESS BAR ===== */
+    .progress-container {
+      background: var(--bg-input);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 7px;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient-bar);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    /* ===== HABIT ===== */
+    .habit-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg-input);
+      border-radius: 10px;
+      margin-bottom: 7px;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .habit-item:hover { border-color: var(--border-hover); }
+    .habit-item.selesai { border-color: var(--accent-green); background: var(--habits-done-bg); }
+    .habit-item.selesai .habit-name { text-decoration: line-through; color: var(--text-muted); }
+
+    .habit-name { flex: 1; font-size: 0.93rem; }
+    .habit-streak { color: var(--accent-yellow); font-size: 0.83rem; font-weight: 600; }
+
+    /* ===== JURNAL ===== */
+    .mood-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .mood-btn {
+      padding: 8px 14px;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+      color: var(--text-primary);
+    }
+
+    .mood-btn:hover { border-color: var(--accent-purple); transform: scale(1.05); }
+    .mood-btn.aktif { border-color: var(--accent-purple); background: var(--calendar-today); transform: scale(1.1); }
+
+    .jurnal-textarea {
+      width: 100%;
+      min-height: 130px;
+      padding: 14px;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 0.93rem;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      line-height: 1.6;
+    }
+
+    .jurnal-textarea:focus { border-color: var(--accent-purple); }
+    .jurnal-textarea::placeholder { color: var(--text-placeholder); }
+
+    .jurnal-entry {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+
+    .jurnal-entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .jurnal-date { color: var(--accent-blue); font-size: 0.83rem; font-weight: 600; }
+    .jurnal-text { color: var(--text-secondary); font-size: 0.88rem; line-height: 1.7; white-space: pre-wrap; }
+
+    /* ===== TODO ===== */
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      background: var(--bg-input);
+      border-radius: 10px;
+      margin-bottom: 7px;
+      border-left: 4px solid var(--text-muted);
+    }
+
+    .todo-item.p-tinggi { border-left-color: var(--accent-red); }
+    .todo-item.p-sedang { border-left-color: var(--accent-yellow); }
+    .todo-item.p-rendah { border-left-color: var(--accent-green); }
+    .todo-item.selesai { opacity: 0.5; }
+    .todo-item.selesai .todo-text { text-decoration: line-through; }
+    .todo-text { flex: 1; font-size: 0.93rem; }
+
+    .todo-badge {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .b-tinggi { background: var(--badge-high-bg); color: var(--accent-red); }
+    .b-sedang { background: var(--badge-med-bg); color: var(--accent-yellow); }
+    .b-rendah { background: var(--badge-low-bg); color: var(--accent-green); }
+
+    .todo-reminder-tag {
+      font-size: 0.72rem;
+      color: var(--accent-blue);
+    }
+
+    /* ===== POMODORO ===== */
+    .pomodoro-container {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .pomodoro-mode-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 30px;
+    }
+
+    .pomo-mode-btn {
+      padding: 8px 18px;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: 25px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+
+    .pomo-mode-btn.aktif {
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+      background: var(--calendar-today);
+    }
+
+    .pomodoro-timer {
+      font-size: 6rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 20px 0;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 4px;
+    }
+
+    .pomodoro-label {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
+
+    .pomodoro-controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    .pomo-btn {
+      padding: 14px 35px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pomo-btn-start {
+      background: var(--accent-green);
+      color: white;
+    }
+
+    .pomo-btn-pause {
+      background: var(--accent-yellow);
+      color: #1a1a2e;
+    }
+
+    .pomo-btn-reset {
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .pomo-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+    .pomodoro-stats {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .pomo-stat {
+      text-align: center;
+    }
+
+    .pomo-stat-num {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent-purple);
+    }
+
+    .pomo-stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .pomo-ring {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .pomo-ring svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: rotate(-90deg);
+    }
+
+    .pomo-ring circle {
+      fill: none;
+      stroke-width: 6;
+    }
+
+    .pomo-ring .ring-bg {
+      stroke: var(--border);
+    }
+
+    .pomo-ring .ring-progress {
+      stroke: var(--accent-purple);
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear;
+    }
+
+    /* ===== GOALS ===== */
+    .goal-item {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+
+    .goal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .goal-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .goal-deadline {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .goal-progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .goal-category {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .cat-karir { background: var(--badge-med-bg); color: var(--accent-yellow); }
+    .cat-kesehatan { background: var(--badge-low-bg); color: var(--accent-green); }
+    .cat-belajar { background: var(--calendar-today); color: var(--accent-purple); }
+    .cat-keuangan { background: var(--badge-high-bg); color: var(--accent-red); }
+    .cat-lainnya { background: var(--bg-hover); color: var(--text-muted); }
+
+    /* ===== CALENDAR ===== */
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .calendar-header h3 {
+      color: var(--text-primary);
+      font-size: 1.05rem;
+    }
+
+    .cal-nav-btn {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .cal-nav-btn:hover { border-color: var(--accent-purple); }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .cal-day-name {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 8px 0;
+      font-weight: 600;
+    }
+
+    .cal-day {
+      text-align: center;
+      padding: 10px 4px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      cursor: default;
+      position: relative;
+    }
+
+    .cal-day.today {
+      background: var(--calendar-today);
+      color: var(--accent-purple);
+      font-weight: 700;
+    }
+
+    .cal-day.has-activity {
+      background: var(--calendar-active);
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    .cal-day.has-activity::after {
+      content: "";
+      position: absolute;
+      bottom: 3px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 5px;
+      height: 5px;
+      background: var(--accent-green);
+      border-radius: 50%;
+    }
+
+    .cal-day.empty { opacity: 0; }
+
+    .cal-legend {
+      display: flex;
+      gap: 15px;
+      margin-top: 15px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .cal-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .cal-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* ===== REMINDER MODAL ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 25px;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-box h3 {
+      color: var(--accent-purple);
+      margin-bottom: 15px;
+    }
+
+    .reminder-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .reminder-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--bg-input);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .reminder-info {
+      flex: 1;
+    }
+
+    .reminder-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .reminder-time {
+      font-size: 0.78rem;
+      color: var(--accent-blue);
+    }
+
+    /* ===== STATS ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-label { color: var(--text-muted); font-size: 0.8rem; }
+
+    .chart-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 130px;
+      padding: 15px 0;
+    }
+
+    .chart-bar-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .chart-bar {
+      width: 100%;
+      max-width: 36px;
+      background: var(--gradient-chart);
+      border-radius: 5px 5px 0 0;
+      min-height: 3px;
+      transition: height 0.5s;
+    }
+
+    .chart-label { color: var(--text-muted); font-size: 0.7rem; margin-top: 6px; }
+    .chart-value { color: var(--accent-purple); font-size: 0.7rem; margin-bottom: 3px; font-weight: 600; }
+
+    /* ===== KOSONG ===== */
+    .kosong {
+      text-align: center;
+      padding: 35px 15px;
+      color: var(--text-muted);
+    }
+
+    .kosong-icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .kosong-text { font-size: 0.9rem; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .header { flex-direction: column; gap: 8px; text-align: center; }
+      .header-left { flex-direction: column; }
+      .header-right { justify-content: center; }
+      .nav-tab { padding: 10px 13px; font-size: 0.8rem; }
+      .container { padding: 12px 10px; }
+      .card { padding: 16px; }
+      .input-row { flex-direction: column; }
+      .pomodoro-timer { font-size: 4rem; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .pomodoro-stats { gap: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>📋 Life<span>Tracker</span></h1>
+      <div class="tanggal-hari-ini" id="tanggalHariIni"></div>
+    </div>
+    <div class="header-right">
+      <button class="reminder-bell" id="btnBell" title="Reminder">
+        🔔
+        <span class="bell-badge" id="bellBadge" style="display:none">0</span>
+      </button>
+      <button class="theme-toggle" id="btnTheme">🌙 Dark</button>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav-tabs">
+    <button class="nav-tab aktif" data-tab="habit">🎯 Habit</button>
+    <button class="nav-tab" data-tab="jurnal">📝 Jurnal</button>
+    <button class="nav-tab" data-tab="todo">✅ To-Do</button>
+    <button class="nav-tab" data-tab="pomodoro">⏰ Pomodoro</button>
+    <button class="nav-tab" data-tab="goals">🏆 Goals</button>
+    <button class="nav-tab" data-tab="calendar">📅 Kalender</button>
+    <button class="nav-tab" data-tab="stats">📊 Stats</button>
+  </div>
+
+  <div class="container">
+
+    <!-- ===== HABIT ===== -->
+    <div class="tab-content aktif" id="tab-habit">
+      <div class="card">
+        <h2>🎯 Habit Tracker Hari Ini</h2>
+        <div class="progress-container">
+          <div class="progress-label">
+            <span>Progress</span>
+            <span id="progressText">0/0</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="input-row">
+          <input class="input-field" id="inputHabit" placeholder="Tambah kebiasaan... (contoh: Olahraga 30 menit)">
+          <button class="btn btn-primary" id="btnTambahHabit">+ Tambah</button>
+        </div>
+        <ul id="habitList" style="list-style:none"></ul>
+        <div class="kosong" id="habitKosong">
+          <div class="kosong-icon">🎯</div>
+          <div class="kosong-text">Belum ada kebiasaan. Tambahkan sekarang!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== JURNAL ===== -->
+    <div class="tab-content" id="tab-jurnal">
+      <div class="card">
+        <h2>📝 Jurnal Hari Ini</h2>
+        <p style="color:var(--text-muted);margin-bottom:10px;font-size:0.88rem">Bagaimana perasaanmu?</p>
+        <div class="mood-selector" id="moodSelector">
+          <button class="mood-btn" data-mood="😄">😄 Senang</button>
+          <button class="mood-btn" data-mood="😊">😊 Baik</button>
+          <button class="mood-btn" data-mood="😐">😐 Biasa</button>
+          <button class="mood-btn" data-mood="😔">😔 Sedih</button>
+          <button class="mood-btn" data-mood="😤">😤 Kesal</button>
+          <button class="mood-btn" data-mood="😰">😰 Cemas</button>
+          <button class="mood-btn" data-mood="🥱">🥱 Lelah</button>
+        </div>
+        <textarea class="jurnal-textarea" id="inputJurnal" placeholder="Tulis apa yang terjadi hari ini..."></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px">
+          <button class="btn btn-primary" id="btnSimpanJurnal">💾 Simpan</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>📖 Riwayat Jurnal</h2>
+        <div id="jurnalList"></div>
+        <div class="kosong" id="jurnalKosong">
+          <div class="kosong-icon">📖</div>
+          <div class="kosong-text">Belum ada jurnal.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TODO ===== -->
+    <div class="tab-content" id="tab-todo">
+      <div class="card">
+        <h2>✅ To-Do List</h2>
+        <div class="input-row">
+          <input class="input-field" id="inputTodo" placeholder="Tambah tugas...">
+          <select class="input-field" id="todoPrioritas" style="flex:0.4;cursor:pointer">
+            <option value="rendah">🟢 Rendah</option>
+            <option value="sedang" selected>🟡 Sedang</option>
+            <option value="tinggi">🔴 Tinggi</option>
+          </select>
+          <button class="btn btn-primary" id="btnTambahTodo">+</button>
+        </div>
+        <div class="input-row" style="margin-bottom:10px">
+          <input class="input-field" id="inputReminder" type="datetime-local" style="flex:0.6">
+          <span style="color:var(--text-muted);font-size:0.8rem;align-self:center">⏰ Set reminder (opsional)</span>
+        </div>
+        <ul id="todoList" style="list-style:none"></ul>
+        <div class="kosong" id="todoKosong">
+          <div class="kosong-icon">✅</div>
+          <div class="kosong-text">Belum ada tugas.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== POMODORO ===== -->
+    <div class="tab-content" id="tab-pomodoro">
+      <div class="card">
+        <h2>⏰ Pomodoro Timer</h2>
+        <div class="pomodoro-container">
+          <div class="pomodoro-mode-tabs">
+            <button class="pomo-mode-btn aktif" data-mode="work">🎯 Fokus (25m)</button>
+            <button class="pomo-mode-btn" data-mode="short">☕ Istirahat (5m)</button>
+            <button class="pomo-mode-btn" data-mode="long">🌴 Panjang (15m)</button>
+          </div>
+
+          <div class="pomo-ring">
+            <svg width="220" height="220">
+              <circle class="ring-bg" cx="110" cy="110" r="100"></circle>
+              <circle class="ring-progress" id="pomoRing" cx="110" cy="110" r="100"
+                stroke-dasharray="628.32" stroke-dashoffset="0"></circle>
+            </svg>
+            <div class="pomodoro-timer" id="pomoDisplay">25:00</div>
+          </div>
+
+          <div class="pomodoro-label" id="pomoLabel">Waktunya fokus!</div>
+
+          <div class="pomodoro-controls">
+            <button class="pomo-btn pomo-btn-start" id="btnPomoStart">▶ Mulai</button>
+            <button class="pomo-btn pomo-btn-reset" id="btnPomoReset">↺ Reset</button>
+          </div>
+
+          <div class="pomodoro-stats">
+            <div class="pomo-stat">
+              <div class="pomo-stat-num" id="pomoCount">0</div>
+              <div class="pomo-stat-label">Sesi Hari Ini</div>
+            </div>
+            <div class="pomo-stat">
+              <div class="pomo-stat-num" id="pomoTotal">0</div>
+              <div class="pomo-stat-label">Total Menit</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== GOALS ===== -->
+    <div class="tab-content" id="tab-goals">
+      <div class="card">
+        <h2>🏆 Goal Tracker</h2>
+        <div class="input-row">
+          <input class="input-field" id="inputGoal" placeholder="Target kamu... (contoh: Belajar React)">
+          <select class="input-field" id="goalCategory" style="flex:0.4;cursor:pointer">
+            <option value="belajar">📚 Belajar</option>
+            <option value="karir">💼 Karir</option>
+            <option value="kesehatan">💪 Kesehatan</option>
+            <option value="keuangan">💰 Keuangan</option>
+            <option value="lainnya">📌 Lainnya</option>
+          </select>
+        </div>
+        <div class="input-row">
+          <input class="input-field" id="goalTarget" type="number" placeholder="Target (angka)" style="flex:0.3">
+          <input class="input-field" id="goalUnit" placeholder="Satuan (contoh: halaman)" style="flex:0.3">
+          <input class="input-field" id="goalDeadline" type="date" style="flex:0.4">
+          <button class="btn btn-primary" id="btnTambahGoal">+</button>
+        </div>
+        <div id="goalList"></div>
+        <div class="kosong" id="goalKosong">
+          <div class="kosong-icon">🏆</div>
+          <div class="kosong-text">Belum ada goal. Tambahkan targetmu!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CALENDAR ===== -->
+    <div class="tab-content" id="tab-calendar">
+      <div class="card">
+        <h2>📅 Kalender Aktivitas</h2>
+        <div class="calendar-header">
+          <button class="cal-nav-btn" id="calPrev">◀ Prev</button>
+          <h3 id="calTitle">Januari 2024</h3>
+          <button class="cal-nav-btn" id="calNext">Next ▶</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="cal-legend">
+          <div class="cal-legend-item">
+            <div class="cal-legend-dot" style="background:var(--accent-purple)"></div>
+            Hari ini
+          </div>
+          <div class="cal-legend-item">
+            <div class="cal-legend-dot" style="background:var(--accent-green)"></div>
+            Ada aktivitas
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== STATS ===== -->
+    <div class="tab-content" id="tab-stats">
+      <div class="card">
+        <h2>📊 Statistik</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" style="color:var(--accent-purple)" id="statHabit">0</div>
+            <div class="stat-label">Habit Selesai</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" style="color:var(--accent-blue)" id="statTodo">0</div>
+            <div class="stat-label">Tugas Selesai</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" style="color:var(--accent-green)" id="statJurnal">0</div>
+            <div class="stat-label">Total Jurnal</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" style="color:var(--accent-yellow)" id="statStreak">0</div>
+            <div class="stat-label">Hari Streak 🔥</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" style="color:var(--accent-red)" id="statPomo">0</div>
+            <div class="stat-label">Pomodoro Hari Ini</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" style="color:var(--accent-orange)" id="statGoals">0</div>
+            <div class="stat-label">Goals Aktif</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>📈 Habit 7 Hari Terakhir</h2>
+        <div class="chart-container" id="mingguChart"></div>
+      </div>
+      <div class="card">
+        <h2>😊 Mood 7 Hari Terakhir</h2>
+        <div id="moodHistory" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- REMINDER MODAL -->
+  <div class="modal-overlay" id="reminderModal">
+    <div class="modal-box">
+      <h3>🔔 Reminder</h3>
+      <div class="reminder-list" id="reminderList"></div>
+      <div style="margin-top:15px;text-align:right">
+        <button class="btn btn-outline btn-sm" id="btnCloseModal">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // UTILITAS
+    // ==========================================
+    const getHariIni = () => new Date().toISOString().split("T")[0];
+    const simpan = (k, d) => localStorage.setItem(k, JSON.stringify(d));
+    const ambil = (k) => { const d = localStorage.getItem(k); return d ? JSON.parse(d) : null; };
+
+    function formatTanggal(s) {
+      const b = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+      const h = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+      const d = new Date(s);
+      return `${h[d.getDay()]}, ${d.getDate()} ${b[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function formatSingkat(s) {
+      return ["Min","Sen","Sel","Rab","Kam","Jum","Sab"][new Date(s).getDay()];
+    }
+
+    document.getElementById("tanggalHariIni").textContent = formatTanggal(getHariIni());
+
+    // ==========================================
+    // DARK / LIGHT MODE
+    // ==========================================
+    let currentTheme = ambil("theme") || "dark";
+    document.documentElement.setAttribute("data-theme", currentTheme);
+    updateThemeBtn();
+
+    function updateThemeBtn() {
+      const btn = document.getElementById("btnTheme");
+      btn.textContent = currentTheme === "dark" ? "🌙 Dark" : "☀️ Light";
+    }
+
+    document.getElementById("btnTheme").addEventListener("click", function() {
+      currentTheme = currentTheme === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      simpan("theme", currentTheme);
+      updateThemeBtn();
+    });
+
+    // ==========================================
+    // NAV TABS
+    // ==========================================
+    document.querySelectorAll(".nav-tab").forEach(tab => {
+      tab.addEventListener("click", function() {
+        document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("aktif"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("aktif"));
+        this.classList.add("aktif");
+        document.getElementById("tab-" + this.dataset.tab).classList.add("aktif");
+        if (this.dataset.tab === "stats") updateStatistik();
+        if (this.dataset.tab === "calendar") renderCalendar();
+      });
+    });
+
+    // ==========================================
+    // HABIT TRACKER
+    // ==========================================
+    let habits = ambil("habits") || [];
+    let habitLog = ambil("habitLog") || {};
+
+    function renderHabits() {
+      const list = document.getElementById("habitList");
+      const kosong = document.getElementById("habitKosong");
+      const hi = getHariIni();
+      list.innerHTML = "";
+      if (!habits.length) { kosong.style.display = "block"; updateProgress(); return; }
+      kosong.style.display = "none";
+      habits.forEach(h => {
+        const done = habitLog[hi] && habitLog[hi].includes(h.id);
+        let streak = 0, d = new Date();
+        while (true) {
+          const ds = d.toISOString().split("T")[0];
+          if (habitLog[ds] && habitLog[ds].includes(h.id)) { streak++; d.setDate(d.getDate()-1); } else break;
+        }
+        const li = document.createElement("li");
+        li.className = `habit-item ${done ? "selesai" : ""}`;
+        li.innerHTML = `<div class="check-box ${done?"checked":""}" data-id="${h.id}"></div>
+          <span class="habit-name">${h.nama}</span>
+          <span class="habit-streak">🔥${streak}</span>
+          <button class="delete-btn" data-id="${h.id}">✕</button>`;
+        list.appendChild(li);
+      });
+      list.querySelectorAll(".check-box").forEach(c => c.addEventListener("click", function() {
+        const id = this.dataset.id;
+        if (!habitLog[hi]) habitLog[hi] = [];
+        const i = habitLog[hi].indexOf(id);
+        i === -1 ? habitLog[hi].push(id) : habitLog[hi].splice(i, 1);
+        simpan("habitLog", habitLog); renderHabits();
+      }));
+      list.querySelectorAll(".delete-btn").forEach(b => b.addEventListener("click", function() {
+        if (confirm("Hapus kebiasaan ini?")) {
+          habits = habits.filter(h => h.id !== this.dataset.id);
+          simpan("habits", habits); renderHabits();
+        }
+      }));
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const hi = getHariIni(), t = habits.length, s = habitLog[hi] ? habitLog[hi].length : 0;
+      document.getElementById("progressText").textContent = `${s}/${t}`;
+      document.getElementById("progressFill").style.width = t ? `${Math.round(s/t*100)}%` : "0%";
+    }
+
+    document.getElementById("btnTambahHabit").addEventListener("click", () => {
+      const v = document.getElementById("inputHabit").value.trim();
+      if (!v) return alert("Isi dulu!");
+      habits.push({ id: Date.now().toString(), nama: v });
+      simpan("habits", habits);
+      document.getElementById("inputHabit").value = "";
+      renderHabits();
+    });
+    document.getElementById("inputHabit").addEventListener("keypress", e => { if (e.key==="Enter") document.getElementById("btnTambahHabit").click(); });
+
+    // ==========================================
+    // JURNAL
+    // ==========================================
+    let journals = ambil("journals") || [];
+    let selectedMood = "";
+
+    document.querySelectorAll(".mood-btn").forEach(b => b.addEventListener("click", function() {
+      document.querySelectorAll(".mood-btn").forEach(x => x.classList.remove("aktif"));
+      this.classList.add("aktif");
+      selectedMood = this.dataset.mood;
+    }));
+
+    document.getElementById("btnSimpanJurnal").addEventListener("click", () => {
+      const t = document.getElementById("inputJurnal").value.trim();
+      if (!t) return alert("Tulis dulu!");
+      if (!selectedMood) return alert("Pilih mood!");
+      journals.unshift({ id: Date.now().toString(), tanggal: getHariIni(), waktu: new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}), mood: selectedMood, teks: t });
+      simpan("journals", journals);
+      document.getElementById("inputJurnal").value = "";
+      document.querySelectorAll(".mood-btn").forEach(x => x.classList.remove("aktif"));
+      selectedMood = "";
+      renderJurnal();
+    });
+
+    function renderJurnal() {
+      const list = document.getElementById("jurnalList"), kosong = document.getElementById("jurnalKosong");
+      list.innerHTML = "";
+      if (!journals.length) { kosong.style.display = "block"; return; }
+      kosong.style.display = "none";
+      journals.slice(0, 20).forEach(j => {
+        const d = document.createElement("div");
+        d.className = "jurnal-entry";
+        d.innerHTML = `<div class="jurnal-entry-header"><span class="jurnal-date">📅 ${formatTanggal(j.tanggal)} • ${j.waktu}</span><div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">${j.mood}</span><button class="delete-btn" data-id="${j.id}">🗑️</button></div></div><div class="jurnal-text">${j.teks}</div>`;
+        list.appendChild(d);
+      });
+      list.querySelectorAll(".delete-btn").forEach(b => b.addEventListener("click", function() {
+        if (confirm("Hapus?")) { journals = journals.filter(j => j.id !== this.dataset.id); simpan("journals", journals); renderJurnal(); }
+      }));
+    }
+
+    // ==========================================
+    // TODO + REMINDER
+    // ==========================================
+    let todos = ambil("todos") || [];
+
+    function renderTodos() {
+      const list = document.getElementById("todoList"), kosong = document.getElementById("todoKosong");
+      list.innerHTML = "";
+      const hi = getHariIni();
+      const today = todos.filter(t => t.tanggal === hi);
+      if (!today.length) { kosong.style.display = "block"; return; }
+      kosong.style.display = "none";
+      const urut = { tinggi: 0, sedang: 1, rendah: 2 };
+      today.sort((a, b) => a.selesai !== b.selesai ? (a.selesai ? 1 : -1) : urut[a.prioritas] - urut[b.prioritas]);
+      today.forEach(t => {
+        const li = document.createElement("li");
+        li.className = `todo-item p-${t.prioritas} ${t.selesai ? "selesai" : ""}`;
+        const reminderText = t.reminder ? `<span class="todo-reminder-tag">⏰ ${new Date(t.reminder).toLocaleString("id-ID",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</span>` : "";
+        li.innerHTML = `<div class="check-box ${t.selesai?"checked":""}" data-id="${t.id}"></div><span class="todo-text">${t.teks}</span>${reminderText}<span class="todo-badge b-${t.prioritas}">${t.prioritas}</span><button class="delete-btn" data-id="${t.id}">✕</button>`;
+        list.appendChild(li);
+      });
+      list.querySelectorAll(".check-box").forEach(c => c.addEventListener("click", function() {
+        const id = this.dataset.id;
+        todos = todos.map(t => t.id === id ? {...t, selesai: !t.selesai} : t);
+        simpan("todos", todos); renderTodos();
+      }));
+      list.querySelectorAll(".delete-btn").forEach(b => b.addEventListener("click", function() {
+        todos = todos.filter(t => t.id !== this.dataset.id);
+        simpan("todos", todos); renderTodos();
+      }));
+      updateBellBadge();
+    }
+
+    document.getElementById("btnTambahTodo").addEventListener("click", () => {
+      const t = document.getElementById("inputTodo").value.trim();
+      if (!t) return alert("Isi dulu!");
+      const reminder = document.getElementById("inputReminder").value || null;
+      todos.push({ id: Date.now().toString(), teks: t, prioritas: document.getElementById("todoPrioritas").value, selesai: false, tanggal: getHariIni(), reminder });
+      simpan("todos", todos);
+      document.getElementById("inputTodo").value = "";
+      document.getElementById("inputReminder").value = "";
+      renderTodos();
+      if (reminder) scheduleReminder(t, reminder);
+    });
+    document.getElementById("inputTodo").addEventListener("keypress", e => { if (e.key==="Enter") document.getElementById("btnTambahTodo").click(); });
+
+    // ==========================================
+    // REMINDER SYSTEM
+    // ==========================================
+    function scheduleReminder(title, timeStr) {
+      const target = new Date(timeStr).getTime();
+      const now = Date.now();
+      const delay = target - now;
+      if (delay > 0 && delay < 86400000) {
+        setTimeout(() => {
+          showNotification("⏰ Reminder!", title);
+        }, delay);
+      }
+    }
+
+    function showNotification(title, body) {
+      if (Notification.permission === "granted") {
+        new Notification(title, { body });
+      }
+      alert(`${title}\n${body}`);
+    }
+
+    function requestNotifPermission() {
+      if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+    }
+
+    function updateBellBadge() {
+      const now = Date.now();
+      const upcoming = todos.filter(t => t.reminder && !t.selesai && new Date(t.reminder).getTime() > now);
+      const badge = document.getElementById("bellBadge");
+      if (upcoming.length > 0) {
+        badge.style.display = "flex";
+        badge.textContent = upcoming.length;
+      } else {
+        badge.style.display = "none";
+      }
+    }
+
+    document.getElementById("btnBell").addEventListener("click", () => {
+      requestNotifPermission();
+      const modal = document.getElementById("reminderModal");
+      const list = document.getElementById("reminderList");
+      list.innerHTML = "";
+      const upcoming = todos.filter(t => t.reminder && !t.selesai).sort((a,b) => new Date(a.reminder) - new Date(b.reminder));
+      if (!upcoming.length) {
+        list.innerHTML = '<div class="kosong"><div class="kosong-text">Tidak ada reminder aktif</div></div>';
+      } else {
+        upcoming.forEach(t => {
+          const d = document.createElement("div");
+          d.className = "reminder-item";
+          d.innerHTML = `<div class="reminder-info"><div class="reminder-title">${t.teks}</div><div class="reminder-time">⏰ ${new Date(t.reminder).toLocaleString("id-ID",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div></div>`;
+          list.appendChild(d);
+        });
+      }
+      modal.classList.add("show");
+    });
+
+    document.getElementById("btnCloseModal").addEventListener("click", () => {
+      document.getElementById("reminderModal").classList.remove("show");
+    });
+
+    // Cek reminder setiap menit
+    setInterval(() => {
+      const now = new Date();
+      todos.forEach(t => {
+        if (t.reminder && !t.selesai && !t.notified) {
+          const r = new Date(t.reminder);
+          if (Math.abs(now - r) < 60000) {
+            showNotification("⏰ Reminder!", t.teks);
+            t.notified = true;
+            simpan("todos", todos);
+          }
+        }
+      });
+      updateBellBadge();
+    }, 30000);
+
+    // ==========================================
+    // POMODORO TIMER
+    // ==========================================
+    const POMO_TIMES = { work: 25*60, short: 5*60, long: 15*60 };
+    const POMO_LABELS = { work: "Waktunya fokus! 🎯", short: "Istirahat sebentar ☕", long: "Istirahat panjang 🌴" };
+    let pomoMode = "work";
+    let pomoSeconds = POMO_TIMES.work;
+    let pomoInterval = null;
+    let pomoRunning = false;
+    let pomoSessions = ambil("pomoSessions") || {};
+
+    function updatePomoDisplay() {
+      const m = Math.floor(pomoSeconds / 60).toString().padStart(2, "0");
+      const s = (pomoSeconds % 60).toString().padStart(2, "0");
+      document.getElementById("pomoDisplay").textContent = `${m}:${s}`;
+
+      const total = POMO_TIMES[pomoMode];
+      const progress = (total - pomoSeconds) / total;
+      const circumference = 628.32;
+      document.getElementById("pomoRing").style.strokeDashoffset = circumference * (1 - progress);
+
+      const hi = getHariIni();
+      const sessions = pomoSessions[hi] || 0;
+      document.getElementById("pomoCount").textContent = sessions;
+      document.getElementById("pomoTotal").textContent = sessions * 25;
+    }
+
+    document.querySelectorAll(".pomo-mode-btn").forEach(btn => {
+      btn.addEventListener("click", function() {
+        if (pomoRunning) return;
+        document.querySelectorAll(".pomo-mode-btn").forEach(b => b.classList.remove("aktif"));
+        this.classList.add("aktif");
+        pomoMode = this.dataset.mode;
+        pomoSeconds = POMO_TIMES[pomoMode];
+        document.getElementById("pomoLabel").textContent = POMO_LABELS[pomoMode];
+        updatePomoDisplay();
+      });
+    });
+
+    document.getElementById("btnPomoStart").addEventListener("click", function() {
+      if (pomoRunning) {
+        clearInterval(pomoInterval);
+        pomoRunning = false;
+        this.textContent = "▶ Lanjut";
+        this.className = "pomo-btn pomo-btn-start";
+      } else {
+        pomoRunning = true;
+        this.textContent = "⏸ Pause";
+        this.className = "pomo-btn pomo-btn-pause";
+        pomoInterval = setInterval(() => {
+          pomoSeconds--;
+          updatePomoDisplay();
+          if (pomoSeconds <= 0) {
+            clearInterval(pomoInterval);
+            pomoRunning = false;
+            document.getElementById("btnPomoStart").textContent = "▶ Mulai";
+            document.getElementById("btnPomoStart").className = "pomo-btn pomo-btn-start";
+            if (pomoMode === "work") {
+              const hi = getHariIni();
+              pomoSessions[hi] = (pomoSessions[hi] || 0) + 1;
+              simpan("pomoSessions", pomoSessions);
+              updatePomoDisplay();
+            }
+            showNotification("⏰ Pomodoro Selesai!", POMO_LABELS[pomoMode === "work" ? "short" : "work"]);
+            pomoMode = pomoMode === "work" ? "short" : "work";
+            pomoSeconds = POMO_TIMES[pomoMode];
+            document.getElementById("pomoLabel").textContent = POMO_LABELS[pomoMode];
+            document.querySelectorAll(".pomo-mode-btn").forEach(b => {
+              b.classList.toggle("aktif", b.dataset.mode === pomoMode);
+            });
+            updatePomoDisplay();
+          }
+        }, 1000);
+      }
+    });
+
+    document.getElementById("btnPomoReset").addEventListener("click", () => {
+      clearInterval(pomoInterval);
+      pomoRunning = false;
+      pomoSeconds = POMO_TIMES[pomoMode];
+      document.getElementById("btnPomoStart").textContent = "▶ Mulai";
+      document.getElementById("btnPomoStart").className = "pomo-btn pomo-btn-start";
+      updatePomoDisplay();
+    });
+
+    updatePomoDisplay();
+
+    // ==========================================
+    // GOAL TRACKER
+    // ==========================================
+    let goals = ambil("goals") || [];
+
+    function renderGoals() {
+      const list = document.getElementById("goalList"), kosong = document.getElementById("goalKosong");
+      list.innerHTML = "";
+      if (!goals.length) { kosong.style.display = "block"; return; }
+      kosong.style.display = "none";
+      goals.forEach(g => {
+        const persen = Math.min(Math.round((g.current / g.target) * 100), 100);
+        const d = document.createElement("div");
+        d.className = "goal-item";
+        const deadlineText = g.deadline ? `📅 ${formatTanggal(g.deadline)}` : "";
+        d.innerHTML = `
+          <div class="goal-header">
+            <div>
+              <div class="goal-title">${g.nama}</div>
+              <div class="goal-deadline">${deadlineText}</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-green btn-sm goal-add" data-id="${g.id}">+1</button>
+              <button class="delete-btn" data-id="${g.id}">✕</button>
+            </div>
+          </div>
+          <div class="goal-progress-text">
+            <span>${g.current} / ${g.target} ${g.unit}</span>
+            <span>${persen}%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${persen}%"></div></div>
+          <span class="goal-category cat-${g.category}">${g.category}</span>
+          ${persen >= 100 ? '<span style="color:var(--accent-green);font-size:0.85rem;margin-left:8px">🎉 Tercapai!</span>' : ""}
+        `;
+        list.appendChild(d);
+      });
+      list.querySelectorAll(".goal-add").forEach(b => b.addEventListener("click", function() {
+        const id = this.dataset.id;
+        goals = goals.map(g => g.id === id ? {...g, current: Math.min(g.current + 1, g.target)} : g);
+        simpan("goals", goals); renderGoals();
+      }));
+      list.querySelectorAll(".delete-btn").forEach(b => b.addEventListener("click", function() {
+        if (confirm("Hapus goal?")) {
+          goals = goals.filter(g => g.id !== this.dataset.id);
+          simpan("goals", goals); renderGoals();
+        }
+      }));
+    }
+
+    document.getElementById("btnTambahGoal").addEventListener("click", () => {
+      const nama = document.getElementById("inputGoal").value.trim();
+      const target = parseInt(document.getElementById("goalTarget").value) || 1;
+      const unit = document.getElementById("goalUnit").value.trim() || "unit";
+      const deadline = document.getElementById("goalDeadline").value || null;
+      const category = document.getElementById("goalCategory").value;
+      if (!nama) return alert("Isi nama goal!");
+      goals.push({ id: Date.now().toString(), nama, target, current: 0, unit, deadline, category });
+      simpan("goals", goals);
+      document.getElementById("inputGoal").value = "";
+      document.getElementById("goalTarget").value = "";
+      document.getElementById("goalUnit").value = "";
+      document.getElementById("goalDeadline").value = "";
+      renderGoals();
+    });
+
+    // ==========================================
+    // CALENDAR VIEW
+    // ==========================================
+    let calMonth = new Date().getMonth();
+    let calYear = new Date().getFullYear();
+
+    function renderCalendar() {
+      const grid = document.getElementById("calendarGrid");
+      const title = document.getElementById("calTitle");
+      const bulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+      title.textContent = `${bulan[calMonth]} ${calYear}`;
+      grid.innerHTML = "";
+
+      ["Min","Sen","Sel","Rab","Kam","Jum","Sab"].forEach(d => {
+        const el = document.createElement("div");
+        el.className = "cal-day-name";
+        el.textContent = d;
+        grid.appendChild(el);
+      });
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const today = getHariIni();
+
+      for (let i = 0; i < firstDay; i++) {
+        const el = document.createElement("div");
+        el.className = "cal-day empty";
+        grid.appendChild(el);
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${calYear}-${(calMonth+1).toString().padStart(2,"0")}-${d.toString().padStart(2,"0")}`;
+        const el = document.createElement("div");
+        el.className = "cal-day";
+        el.textContent = d;
+
+        if (dateStr === today) el.classList.add("today");
+
+        const hasHabit = habitLog[dateStr] && habitLog[dateStr].length > 0;
+        const hasJurnal = journals.some(j => j.tanggal === dateStr);
+        if (hasHabit || hasJurnal) el.classList.add("has-activity");
+
+        grid.appendChild(el);
+      }
+    }
+
+    document.getElementById("calPrev").addEventListener("click", () => {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
+    });
+
+    document.getElementById("calNext").addEventListener("click", () => {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar();
+    });
+
+    // ==========================================
+    // STATISTIK
+    // ==========================================
+    function updateStatistik() {
+      const hi = getHariIni();
+      document.getElementById("statHabit").textContent = habitLog[hi] ? habitLog[hi].length : 0;
+      document.getElementById("statTodo").textContent = todos.filter(t => t.tanggal === hi && t.selesai).length;
+           document.getElementById("statJurnal").textContent = journals.length;
+
+      // Streak
+      let streak = 0;
+      let d = new Date();
+      while (true) {
+        const ds = d.toISOString().split("T")[0];
+        const adaHabit = habitLog[ds] && habitLog[ds].length > 0;
+        const adaJurnal = journals.some(j => j.tanggal === ds);
+        const adaPomo = pomoSessions[ds] && pomoSessions[ds] > 0;
+        if (adaHabit || adaJurnal || adaPomo) {
+          streak++;
+          d.setDate(d.getDate() - 1);
+        } else break;
+      }
+      document.getElementById("statStreak").textContent = streak;
+
+      // Pomodoro
+      document.getElementById("statPomo").textContent = pomoSessions[hi] || 0;
+
+      // Goals aktif
+      document.getElementById("statGoals").textContent = goals.filter(g => g.current < g.target).length;
+
+      // Chart 7 hari
+      renderChart();
+      renderMoodHistory();
+    }
+
+    function renderChart() {
+      const chart = document.getElementById("mingguChart");
+      chart.innerHTML = "";
+      for (let i = 6; i >= 0; i--) {
+        const tgl = new Date();
+        tgl.setDate(tgl.getDate() - i);
+        const ds = tgl.toISOString().split("T")[0];
+        const total = habits.length;
+        const selesai = habitLog[ds] ? habitLog[ds].length : 0;
+        const persen = total > 0 ? Math.round((selesai / total) * 100) : 0;
+        const wrap = document.createElement("div");
+        wrap.className = "chart-bar-wrap";
+        wrap.innerHTML = `
+          <div class="chart-value">${persen}%</div>
+          <div class="chart-bar" style="height:${Math.max(persen, 3)}%"></div>
+          <div class="chart-label">${formatSingkat(ds)}</div>
+        `;
+        chart.appendChild(wrap);
+      }
+    }
+
+    function renderMoodHistory() {
+      const container = document.getElementById("moodHistory");
+      container.innerHTML = "";
+      for (let i = 6; i >= 0; i--) {
+        const tgl = new Date();
+        tgl.setDate(tgl.getDate() - i);
+        const ds = tgl.toISOString().split("T")[0];
+        const j = journals.find(x => x.tanggal === ds);
+        const div = document.createElement("div");
+        div.style.cssText = `text-align:center;padding:10px 14px;background:var(--bg-input);border-radius:10px;border:1px solid var(--border);min-width:55px`;
+        div.innerHTML = `
+          <div style="font-size:1.4rem">${j ? j.mood : "❓"}</div>
+          <div style="font-size:0.68rem;color:var(--text-muted);margin-top:3px">${formatSingkat(ds)}</div>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    // ==========================================
+    // INISIALISASI SEMUA
+    // ==========================================
+    renderHabits();
+    renderJurnal();
+    renderTodos();
+    renderGoals();
+    renderCalendar();
+    updatePomoDisplay();
+    requestNotifPermission();
+
+    // Schedule semua reminder yang belum lewat
+    todos.forEach(t => {
+      if (t.reminder && !t.selesai && !t.notified) {
+        scheduleReminder(t.teks, t.reminder);
+      }
+    });
+  </script>
+
+</body>
+</html>
